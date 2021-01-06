@@ -1,0 +1,196 @@
+# The author of this file is Baezor.
+
+# Header Tablists
+# Version: 1.0.0
+
+# Configuration
+options:
+
+	# Header - You can use a divider by typing {_div}!
+	header: "&7", {_div}, "&7", "&fWelcome back to the &aDevelopment Server&f!", "&7&o(( You are connected to dev-2. ))", "&7", {_div} and "&7"
+
+	# Footer - You can use a divider by typing {_div}!
+	footer: {_div}, "&7", "&fThere are currently &a%amount of players% &aplayer(s) &fonline&f!", "&fThe current tps is &a%tps from the last minute%&f!", "&7" and {_div}
+
+	# Max Rows
+	max-rows: 3
+
+	# Groups & Colors
+
+	enable-groups: true
+
+	groups: "owner", "friend", "moderator" and "default"
+	colors-1: "&4", "&3", "&6" and "&7"
+	colors-2: "&c", "&b", "&e" and "&7"
+
+	# The version of Header Tablist you have.
+	version: 1.0.0
+
+	# This is the storage prefix for the entire script. DO NOT ever change this unless
+	# the variables conflict with another script!
+	storage: headertablist
+
+# After this point, please do not edit anything. The rest is code to register the
+# configuration in the rest of the script!
+
+# -------------------------------------- #
+#                                        #
+#             Tablist Update             #
+#                                        #
+# -------------------------------------- #
+
+# Update Tablist
+function tab_updateTabList():
+
+	# Set Divider Variable
+	set {_div} to "&r   &8&m                                                                                                             &r   "
+
+	# Register Header
+	add {@header} to {_list::*}
+
+	# Groups
+	if {@enable-groups} is true:
+		loop {{@storage}::groups::*}:
+			add tab_addGroup(loop-value) to {_list::*}
+	else:
+
+		set {_players::*} to players
+
+		add "&f&lPlayers &8(&7%amount of {_players::*}%&8)" to {_list::*}
+		add tab_formatPlayers({_players::*}, "&7") to {_list::*}
+		add "&7" to {_list::*}
+
+	# Register Footer
+	add {@footer} to {_list::*}
+
+	# Fill Bottom Tab
+	loop 35 times:
+		add "&7" to {_list::*}
+
+	# List to String
+	loop {_list::*}:	
+		if {_text} is not set:
+			set {_text} to "%loop-value%"
+		else:
+			set {_text} to "%{_text}%%nl%%loop-value%"
+
+	# Tablist
+	loop all players:
+		set tablist header of loop-player to {_text}
+
+# -------------------------------------- #
+#                                        #
+#              Format Groups             #
+#                                        #
+# -------------------------------------- #
+
+# Add Group
+function tab_addGroup(group: text) :: texts:
+
+	loop {{@storage}::groups::*}:
+		loop-value is {_group}
+		set {_index} to loop-index
+		set {_bool1} to true
+		set {_color1} to {{@storage}::colors::one::%{_index}%}
+		set {_color2} to {{@storage}::colors::two::%{_index}%}
+		exit loop
+
+	{_bool1} is true
+
+	loop all players:
+		loop-player's group is {_group}
+		add loop-player to {_players::*}
+		set {_bool2} to true
+
+	{_bool2} is true
+
+	add "%{_color1}%&l%{_group} in strict proper case% &8(&7%amount of {_players::*}%&8)" to {_return::*}
+	add tab_formatPlayers({_players::*}, "%{_color2}%") to {_return::*}
+	add "&7" to {_return::*}
+
+	return {_return::*}
+
+# Format Players
+function tab_formatPlayers(offlineplayers: offlineplayers, color: text = "&7") :: texts:
+	
+	set {_text} to "%{_offlineplayers::*}%"
+
+	set {_split::*} to {_text} split at " "
+	loop {_split::*}:
+		if {_str} is not set:
+			set {_str} to "%{_color}%%loop-value%"
+		else:
+			set {_str} to "%{_color}%%{_str}% %{_color}%%loop-value%"
+		if length of {_str} is greater than 80:
+			if {_return::*} is not set:
+				add "%{_color}%%{_str}%" to {_return::*}
+			else:
+				add "%{_color}%%{_str}%" to {_return::*}
+			delete {_str}
+	if {_str} is set:
+		if {_return::*} is not set:
+			add "%{_color}%%{_str}%" to {_return::*}
+		else:
+			add "%{_color}%%{_str}%" to {_return::*}
+
+	set {_returnLoops} to 1
+	if (amount of {_return::*}) is greater than {@max-rows}:
+		loop {_return::*}:
+			add 1 to {_returnLoops}
+			if {_returnLoops} is {@max-rows}:
+				set {_l} to the length of loop-value
+				set {_t} to the first {_l}-5 characters of loop-value
+				set {_endloop} to loop-value
+			{_returnLoops} is greater than {@max-rows}
+			remove loop-value from {_return::*}
+
+		loop {_return::*}:
+			if {_calc} is not set:
+				set {_calc} to "%loop-value%"
+			else:
+				set {_calc} to "%{_calc}%%loop-value%"
+		set {_calcSplit::*} to {_calc} split at ","
+		set {_amount} to ((amount of {_offlineplayers::*})-(amount of {_calcSplit::*}))-5
+		set {_t} to "%{_t}%%{_color}%... and %{_amount}% %{_color}%more."
+		set {_return::%{_endloop}%} to {_t} 
+
+	return {_return::*}
+
+# -------------------------------------- #
+#                                        #
+#             Register Groups            #
+#                                        #
+# -------------------------------------- #
+
+# Register Groups & Colors
+function tab_registerGroups():
+	delete {{@storage}::groups::*}
+	delete {{@storage}::colors::one::*}
+	delete {{@storage}::colors::two::*}
+	{@enable-groups} is true
+	set {{@storage}::groups::*} to {@groups}
+	set {{@storage}::colors::one::*} to {@colors-1}
+	set {{@storage}::colors::two::*} to {@colors-2}
+
+# -------------------------------------- #
+#                                        #
+#             Update Events              #
+#                                        #
+# -------------------------------------- #
+
+# On Join Event
+on join:
+	tab_updateTabList()
+
+# On Quit Event
+on quit:
+	tab_updateTabList()
+
+# On Load Event
+on load:
+	tab_registerGroups()
+	tab_updateTabList()
+
+# Every 5 Seconds Event
+every 5 seconds:
+	tab_updateTabList()
