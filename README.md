@@ -1,2 +1,2 @@
-# skript-snippets
-Public scripts for everybody to use.
+# Public Scripts
+This is a collection of public scripts I have made.
